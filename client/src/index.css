@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'MyCustomFont';
+  src: url('./static/fonts/Geist/Geist-Black.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'logo';
+  src: url('./static/fonts/PressStart2P-Regular.ttf') format('ttf');
+}
+
+@layer base {
+  body {
+    font-family: 'MyCustomFont', sans-serif;
+  }
+}
