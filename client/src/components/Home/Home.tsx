@@ -1,52 +1,173 @@
-import React, { useContext, useState } from "react";
+import { useContext } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { v4 } from "uuid";
 import UserContext from "../../contexts/userContext";
+import SignUp from "../Auth/Signup";
+import Login from "../Auth/Login";
+
 
 function Home() {
   const navigate = useNavigate();
-  const { musername, setmUsername } = useContext(UserContext) || {};
-
-  if (setmUsername) {
-    setmUsername("lofad");
+  const { musername, loggedIn, setLoggedIn,setmUsername,setLanguage } =
+    useContext(UserContext)!;
+  if (localStorage.getItem("token") !== null) {
+    console.log("Logged In");
+    setLoggedIn!(true);
+    setmUsername!(localStorage.getItem("username") || "");
   }
-  console.log(musername)
+  console.log(loggedIn);
+
+  console.log(musername);
 
   const handleCreateRoom = () => {
     const roomId = v4();
-
     console.log("Create Room");
     toast.success("Room Created");
     navigate(`/codeEditor/${roomId}`);
-  };
 
-  type loggedIn = {
-    loggedIn: boolean;
+    navigator.clipboard.writeText(roomId).then(
+      function () {
+        toast.success("Room ID Copied");
+        console.log("Copying to clipboard was successful!");
+      },
+      function (err) {
+        console.error("Could not copy text: ", err);
+      }
+    );
   };
-
-  const [loggedIn, setLoggedIn] = useState<loggedIn>({ loggedIn: true });
 
   return (
     <>
-      <div className="w-screen h-screen bg-zinc-900">
+      <div className="w-screen h-screen bg-zinc-900 overflow-hidden">
         <header>
           <nav className="flex justify-between items-center h-16 bg-zinc-900 text-white">
             <div className="pl-8 text-4xl mt-10">BroCode</div>
             <div className="pr-8 mt-10">
-              {loggedIn.loggedIn === true ? (
+              {loggedIn ? (
                 <>
-                  <button onClick={handleCreateRoom} className="btn mr-4">
-                    Create Room
-                  </button>
+                  <div className="dropdown dropdown-hover mr-8">
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="btn btn-accent m-1"
+                    >
+                      Create Room
+                    </div>
+                    <ul
+                      tabIndex={0}
+                      className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                    >
+                      <li
+                        onClick={() => {
+                          setLanguage!("javascript");
+                          handleCreateRoom();
+                        }}
+                      >
+                        <a>JavaScript</a>
+                      </li>
+                      <li
+                        onClick={() => {
+                          setLanguage!("c++");
+                          handleCreateRoom();
+                        }}
+                      >
+                        <a>Python</a>
+                      </li>
+                      <li
+                        onClick={() => {
+                          setLanguage!("golang");
+                          handleCreateRoom();
+                        }}
+                      >
+                        <a>Golang</a>
+                      </li>
+                    </ul>
+                  </div>
                   <Toaster position="top-right" />
-                  <button className="btn mr-4">Join Room</button>
-                  <button className="btn btn-outline">Logout</button>
+                  <button
+                    className="btn -ml-5"
+                    onClick={() =>
+                      (document.getElementById("my_modal_2") as HTMLDialogElement).showModal()
+                    }
+                  >
+                    Join room
+                  </button>
+                  <dialog id="my_modal_2" className="modal">
+                    <div className="modal-box">
+                      <input
+                        type="text"
+                        placeholder="enter room id"
+                        className="input input-bordered w-full max-w-xs"
+                      />
+                      <button className="btn ml-10"> Join</button>
+                    </div>
+                    <form method="dialog" className="modal-backdrop">
+                      <button>close</button>
+                    </form>
+                  </dialog>
+                  <div className="dropdown dropdown-hover mr-8">
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="btn btn-ghost btn-accent m-1"
+                    >
+                      {musername}
+                    </div>
+                    <ul
+                      tabIndex={0}
+                      className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52"
+                    >
+                      <li>
+                        <a
+                          onClick={() => {
+                            setLoggedIn!(false);
+                            setmUsername!("");
+                            localStorage.clear();
+                            toast.success("logged out");
+                          }}
+                        >
+                          Logout
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
                 </>
               ) : (
                 <>
-                  <button className="btn mr-4">SignUp</button>
-                  <button className="btn btn-outline">Login</button>
+                  <button
+                    className="btn mr-4"
+                    onClick={() =>
+                      (document.getElementById("my_modal_2") as HTMLDialogElement).showModal()
+                    }
+                  >
+                    SIGNUP
+                  </button>
+                  <dialog id="my_modal_2" className="modal">
+                    <div className="modal-box overflow-hidden">
+                      <SignUp></SignUp>
+                    </div>
+                    <form method="dialog" className="modal-backdrop">
+                      <button>close</button>
+                    </form>
+                  </dialog>
+
+                  <button
+                    className="btn btn-outline mr-4"
+                    onClick={() =>
+                     ( document.getElementById("my_modal_3") as HTMLDialogElement).showModal()
+                    }
+                  >
+                    LOGIN
+                  </button>
+                  <dialog id="my_modal_3" className="modal">
+                    <div className="modal-box overflow-hidden">
+                      <Login></Login>
+                    </div>
+                    <form method="dialog" className="modal-backdrop">
+                      <button>close</button>
+                    </form>
+                  </dialog>
                 </>
               )}
             </div>
