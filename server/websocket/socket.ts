@@ -43,16 +43,16 @@ class SocketServer {
   }
 
   public initListeners() {
-    this.ws.use((socket, next) => {
-      this.auth(socket, next);
-    });
+    // this.ws.use((socket, next) => {
+    //   this.auth(socket, next);
+    // });
 
     this.ws.on("connection", (socket) => {
       console.log("a user connected", socket.id);
 
       socket.on("join", (data) => {
         console.log("Joining Room", data);
-        this.usersSocketMap.set(socket.id, data.name);
+        this.usersSocketMap.set(socket.id, data.username);
         socket.join(data.roomId);
         const clients = this.getAllUsersInRoom(data.roomId);
         console.log("clients", clients);
@@ -60,7 +60,7 @@ class SocketServer {
           this.ws.to(client.socketId).emit("joined", {
             clients,
             socketId: socket.id,
-            username: data.name,
+            username: data.username,
           });
         });
       });

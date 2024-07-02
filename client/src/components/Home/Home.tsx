@@ -37,6 +37,12 @@ function Home() {
     );
   };
 
+  function joinRoom(){
+    console.log("Join Room");
+    const roomId = (document.querySelector("input") as HTMLInputElement).value;
+    navigate(`/codeEditor/${roomId}`);
+  }
+
   return (
     <>
       <div className="w-screen h-screen bg-zinc-900 overflow-hidden">
@@ -100,7 +106,7 @@ function Home() {
                         placeholder="enter room id"
                         className="input input-bordered w-full max-w-xs"
                       />
-                      <button className="btn ml-10"> Join</button>
+                      <button onClick={joinRoom} className="btn ml-10"> Join</button>
                     </div>
                     <form method="dialog" className="modal-backdrop">
                       <button>close</button>

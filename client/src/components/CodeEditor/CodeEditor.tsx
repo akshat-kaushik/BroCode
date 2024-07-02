@@ -10,7 +10,6 @@ import TerminalComponent from "./Terminal";
 function CodeEditor() {
   const { musername } = useContext(UserContext) || {};
   console.log(musername);
-  console.log;
 
   const [users,setUsers]=useState([{name:"user1",socketid:"1"},{name:"user2",socketid:"2"}])
   const socketRef = useRef<Socket | null>(null);
@@ -27,6 +26,7 @@ function CodeEditor() {
   useEffect(() => {
     const init = async () => {
       socketRef.current = await initUserSocket();
+      console.log("connecting");
       socketRef.current?.on("connect_error", (err: any) => {
         handleErrors(err);
       });
@@ -48,6 +48,8 @@ function CodeEditor() {
           if (name == musername) clients.pop(name);
         });
         setClients(clients);
+        console.log("clients", clients);
+      
         socketRef.current?.emit("code-sync", {
           code: codeRef.current,
           socketId: socketId,
@@ -77,7 +79,7 @@ function CodeEditor() {
 
   type Client = {
     socketId: string;
-    name: string;
+    username: string;
   };
 
   const [clients, setClients] = useState<Client[]>([]);
@@ -106,8 +108,8 @@ function CodeEditor() {
             </div>
             <div className="text-lg">
               <h1 className="text-lg mt-10">JOINED USERS</h1>
-              {users.map((user) => {
-                return <li>{user.name}</li>;
+              {clients.map((user) => {
+                return <li>{user.username}</li>;
               })}
             </div>
           </ul>

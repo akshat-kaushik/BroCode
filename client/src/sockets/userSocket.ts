@@ -1,8 +1,8 @@
 import { io } from "socket.io-client";
 
 export const initUserSocket = async () => {
-  
-  const socket = io("http://localhost:3000", {
+  const backendUrl = "http://localhost:3000";
+  const socket = io(backendUrl, {
     forceNew: true,
     reconnectionAttempts: Infinity,
     timeout: 10000,
