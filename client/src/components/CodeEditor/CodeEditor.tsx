@@ -1,7 +1,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import { initUserSocket } from "../../sockets/userSocket";
 import { Socket } from "socket.io-client";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
 import UserContext from "../../contexts/userContext";
 import Editor from "./Editor";
@@ -49,33 +49,30 @@ function CodeEditor() {
         });
         setClients(clients);
         console.log("clients", clients);
-      
+        
         socketRef.current?.emit("code-sync", {
           code: codeRef.current,
           socketId: socketId,
         })
+        console.log("Code Synced");
       });
 
       socketRef.current.on("disconnected", ({ socketId, username }) => {
         toast.error(`${username} left the room`);
-        setClients(clients.filter((client) => client.socketId != socketId));
-      });
+        setClients((prev)=>{
+          return prev.filter((client)=>client.socketId!==socketId)
+        });
+      })
+      
     };
     init();
     return () => {
       socketRef.current?.disconnect();
+      socketRef.current?.off("joined").disconnect()
+      socketRef.current?.off("disconnected").disconnect();
     };
   }, []);
 
-  useEffect(() => {
-    if (!socketRef.current) return;
-    socketRef.current?.on("code-change", (code: string) => {
-      if (code != null) {
-        //@ts-ignore
-        editorRef.current?.setValue(code);
-      }
-    });
-  }, [socketRef.current]);
 
   type Client = {
     socketId: string;
@@ -86,6 +83,7 @@ function CodeEditor() {
 
   return (
     <div className="flex h-screen">
+      <Toaster/>
       {/* Left Side */}
       <div className="drawer ml-4 absolute z-10">
         <input id="my-drawer" type="checkbox" className="drawer-toggle" />
@@ -104,7 +102,7 @@ function CodeEditor() {
           <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
             <div className="flex-col justify-between bottom-0">
               <button className="btn mr-2 btn-primary">COPY ROOM ID</button>
-              <button className="btn btn-primary">LEAVE ROOM</button>
+              <button onClick={()=>{reactNavigator("/")}} className="btn btn-primary">LEAVE ROOM</button>
             </div>
             <div className="text-lg">
               <h1 className="text-lg mt-10">JOINED USERS</h1>
@@ -119,8 +117,9 @@ function CodeEditor() {
         <Editor
           socketRef={socketRef}
           roomId={roomId}
-          onCodeChange={(code: string) => {
+          codeChange={(code: string) => {
             codeRef.current = code;
+            console.log("Code changed sync", code);
           }}
         />
 

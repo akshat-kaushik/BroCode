@@ -32,7 +32,7 @@ class SocketServer {
         }
     }
     getAllUsersInRoom(roomId) {
-        return Array.from(this.ws.sockets.adapter.rooms.get(roomId) || []).map((socketId) => {
+        return [...(this.ws.sockets.adapter.rooms.get(roomId) || [])].map((socketId) => {
             return {
                 socketId,
                 username: this.usersSocketMap.get(socketId) || "",
@@ -40,11 +40,8 @@ class SocketServer {
         });
     }
     initListeners() {
-        // this.ws.use((socket, next) => {
-        //   this.auth(socket, next);
-        // });
         this.ws.on("connection", (socket) => {
-            console.log("a user connected", socket.id);
+            console.log("A user connected", socket.id);
             socket.on("join", (data) => {
                 console.log("Joining Room", data);
                 this.usersSocketMap.set(socket.id, data.username);
@@ -59,25 +56,27 @@ class SocketServer {
                     });
                 });
             });
-        });
-        this.ws.on("code-change", (data) => {
-            console.log("code-change", data);
-            this.ws.in(data.roomId).emit("code-change", data.code);
-        });
-        this.ws.on("disconnecting", (socket) => {
-            const rooms = Array.from(socket.rooms);
-            rooms.forEach((room) => {
-                socket.in(room).emit("disconnected", {
-                    socketId: socket.id,
-                    username: this.usersSocketMap.get(socket.id),
+            socket.on("disconnecting", () => {
+                const rooms = [...socket.rooms];
+                rooms.forEach((room) => {
+                    socket.in(room).emit("disconnected", {
+                        socketId: socket.id,
+                        username: this.usersSocketMap.get(socket.id),
+                    });
+                });
+                this.usersSocketMap.delete(socket.id);
+                rooms.forEach((room) => {
+                    socket.leave(room);
                 });
             });
-            this.usersSocketMap.delete(socket.id);
-            socket.leave();
-        });
-        this.ws.on("code-sync", (data) => {
-            console.log("code-sync", data);
-            this.ws.to(data.socketId).emit("code-change", data.code);
+            socket.on("code-change", (data) => {
+                console.log("code-change received", data);
+                socket.in(data.roomId).emit("code-change", data.code);
+            });
+            socket.on("code-sync", ({ code, socketId }) => {
+                console.log("code-sync", code, socketId);
+                this.ws.to(socketId).emit("code-sync", code);
+            });
         });
     }
     get wss() {
