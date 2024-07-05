@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect} from "react";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/dracula.css";
 import "codemirror/mode/javascript/javascript";
@@ -32,15 +32,20 @@ function Editor({ socketRef, roomId, codeChange }) {
       cm.on("change", (instance: any, changes: any) => {
         console.log("Editor change detected:", changes);
         const { origin } = changes;
+        const cursorPosition = instance.getCursor();
+        console.log("Cursor position:", cursorPosition);
+
         const code = instance.getValue();
         codeChange(code);
         if (origin !== "setValue") {
           socketRef.current?.emit("code-change", {
             roomId: roomId,
             code: code,
+            cursorPosition: cursorPosition,
           });
         }
       });
+
     }
 
     init();

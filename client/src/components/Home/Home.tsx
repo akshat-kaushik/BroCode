@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { v4 } from "uuid";
@@ -6,19 +6,18 @@ import UserContext from "../../contexts/userContext";
 import SignUp from "../Auth/Signup";
 import Login from "../Auth/Login";
 
-
 function Home() {
   const navigate = useNavigate();
-  const { musername, loggedIn, setLoggedIn,setmUsername,setLanguage } =
+  const { musername, loggedIn, setLoggedIn, setmUsername, setLanguage } =
     useContext(UserContext)!;
-  if (localStorage.getItem("token") !== null) {
-    console.log("Logged In");
-    setLoggedIn!(true);
-    setmUsername!(localStorage.getItem("username") || "");
-  }
-  console.log(loggedIn);
 
-  console.log(musername);
+  useEffect(() => {
+    if (localStorage.getItem("token") !== null) {
+      console.log("Logged In");
+      setLoggedIn!(true);
+      setmUsername!(localStorage.getItem("username") || "");
+    }
+  }, [setLoggedIn, setmUsername]);
 
   const handleCreateRoom = () => {
     const roomId = v4();
@@ -37,11 +36,17 @@ function Home() {
     );
   };
 
-  function joinRoom(){
+  const joinRoom = () => {
     console.log("Join Room");
     const roomId = (document.querySelector("input") as HTMLInputElement).value;
     navigate(`/codeEditor/${roomId}`);
-  }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      joinRoom();
+    }
+  };
 
   return (
     <>
@@ -74,7 +79,7 @@ function Home() {
                       </li>
                       <li
                         onClick={() => {
-                          setLanguage!("c++");
+                          setLanguage!("python");
                           handleCreateRoom();
                         }}
                       >
@@ -94,7 +99,11 @@ function Home() {
                   <button
                     className="btn -ml-5"
                     onClick={() =>
-                      (document.getElementById("my_modal_2") as HTMLDialogElement).showModal()
+                      (
+                        document.getElementById(
+                          "my_modal_2"
+                        ) as HTMLDialogElement
+                      ).showModal()
                     }
                   >
                     Join room
@@ -105,8 +114,11 @@ function Home() {
                         type="text"
                         placeholder="enter room id"
                         className="input input-bordered w-full max-w-xs"
+                        onKeyDown={handleKeyDown}
                       />
-                      <button onClick={joinRoom} className="btn ml-10"> Join</button>
+                      <button onClick={joinRoom} className="btn ml-10">
+                        Join
+                      </button>
                     </div>
                     <form method="dialog" className="modal-backdrop">
                       <button>close</button>
@@ -144,31 +156,38 @@ function Home() {
                   <button
                     className="btn mr-4"
                     onClick={() =>
-                      (document.getElementById("my_modal_2") as HTMLDialogElement).showModal()
+                      (
+                        document.getElementById(
+                          "my_modal_2"
+                        ) as HTMLDialogElement
+                      ).showModal()
                     }
                   >
                     SIGNUP
                   </button>
                   <dialog id="my_modal_2" className="modal">
                     <div className="modal-box overflow-hidden">
-                      <SignUp></SignUp>
+                      <SignUp />
                     </div>
                     <form method="dialog" className="modal-backdrop">
                       <button>close</button>
                     </form>
                   </dialog>
-
                   <button
                     className="btn btn-outline mr-4"
                     onClick={() =>
-                     ( document.getElementById("my_modal_3") as HTMLDialogElement).showModal()
+                      (
+                        document.getElementById(
+                          "my_modal_3"
+                        ) as HTMLDialogElement
+                      ).showModal()
                     }
                   >
                     LOGIN
                   </button>
                   <dialog id="my_modal_3" className="modal">
                     <div className="modal-box overflow-hidden">
-                      <Login></Login>
+                      <Login />
                     </div>
                     <form method="dialog" className="modal-backdrop">
                       <button>close</button>
@@ -188,7 +207,7 @@ function Home() {
             <h1 className="text-white text-centre text-xl mt-7 w-3/5">
               Your coding community awaits! BroCode is your gateway to
               collaborative coding brilliance. Connect, create, and code with
-              the bros
+              the bros.
             </h1>
           </div>
         </main>

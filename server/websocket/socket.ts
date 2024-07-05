@@ -14,24 +14,25 @@ class SocketServer {
     });
   }
 
-  usersSocketMap = new Map<string, string[]>();
+  usersSocketMap = new Map<string, string>();
 
-  auth(socket: any, next: any) {
-    const token = socket.handshake.auth.token;
+  // auth(socket: any, next: any) {
+  //   const token = socket.handshake.auth.token;
 
-    if (!token) {
-      return next(new Error("Unauthorized"));
-    }
+  //   if (!token) {
+  //     return next(new Error("Unauthorized"));
+  //   }
 
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
-      socket.request.user = decoded;
-      next();
-    } catch (err) {
-      return next(new Error("Unauthorized"));
-    }
-  }
+  //   try {
+  //     const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+  //     socket.request.user = decoded;
+  //     next();
+  //   } catch (err) {
+  //     return next(new Error("Unauthorized"));
+  //   }
+  // }
 
+  
   getAllUsersInRoom(roomId: string) {
     return [...(this.ws.sockets.adapter.rooms.get(roomId) || [])].map(
       (socketId) => {
@@ -45,14 +46,11 @@ class SocketServer {
 
   public initListeners() {
     this.ws.on("connection", (socket) => {
-      console.log("A user connected", socket.id);
-
       socket.on("join", (data) => {
-        console.log("Joining Room", data);
         this.usersSocketMap.set(socket.id, data.username);
         socket.join(data.roomId);
         const clients = this.getAllUsersInRoom(data.roomId);
-        console.log("clients", clients);
+
         clients.forEach((client) => {
           this.ws.to(client.socketId).emit("joined", {
             clients,
@@ -77,13 +75,19 @@ class SocketServer {
       });
 
       socket.on("code-change", (data) => {
-        console.log("code-change received", data);
         socket.in(data.roomId).emit("code-change", data.code);
       });
 
-      socket.on("code-sync", ({ code, socketId }) => {
-        console.log("code-sync", code, socketId);
-        this.ws.to(socketId).emit("code-sync", code);
+      socket.on("offer", (data) => {
+        socket.to(data.roomId).emit("offer", data.offer);
+      });
+
+      socket.on("answer", (data) => {
+        socket.to(data.roomId).emit("answer", data.answer);
+      });
+
+      socket.on("ice-candidate", (data) => {
+        socket.to(data.roomId).emit("ice-candidate", data.candidate);
       });
     });
   }
