@@ -207,7 +207,7 @@ function Home() {
             <h1 className="text-white text-centre text-xl mt-7 w-3/5">
               Your coding community awaits! BroCode is your gateway to
               collaborative coding brilliance. Connect, create, and code with
-              the bros.
+              the bros.n
             </h1>
           </div>
         </main>
